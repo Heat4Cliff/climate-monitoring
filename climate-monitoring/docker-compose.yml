@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: climate_monitoring
+    ports:
+      - "55432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  metabase:
+    image: metabase/metabase:latest
+    depends_on:
+      - postgres
+    ports:
+      - "33001:3000"
+    volumes:
+      - metabase_data:/metabase-data
+    environment:
+      MB_DB_FILE: /metabase-data/metabase.db
+    restart: unless-stopped
+
+  app:
+    image: node:20
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: npm run dev
+    ports:
+      - "3010:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgrespassword@postgres:5432/climate_monitoring?schema=public"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  metabase_data:

@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Station {
+  id           BigInt               @id @default(autoincrement())
+  stationId    Int                  @unique @map("station_id")
+  stationName  String               @map("station_name") @db.VarChar(255)
+  latitude     Decimal              @db.Decimal(9, 6)
+  longitude    Decimal              @db.Decimal(9, 6)
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @default(now()) @updatedAt @map("updated_at")
+  observations ClimateObservation[]
+
+  @@map("stations")
+}
+
+model ClimateObservation {
+  id               BigInt         @id @default(autoincrement())
+  stationId        BigInt         @map("station_id")
+  station          Station        @relation(fields: [stationId], references: [id])
+  observedAt       DateTime       @map("observed_at") @db.Date
+  temp0700         Decimal?       @map("temp_0700") @db.Decimal(5, 2)
+  temp1300         Decimal?       @map("temp_1300") @db.Decimal(5, 2)
+  temp1800         Decimal?       @map("temp_1800") @db.Decimal(5, 2)
+  tempAvg          Decimal?       @map("temp_avg") @db.Decimal(5, 2)
+  tempMax          Decimal?       @map("temp_max") @db.Decimal(5, 2)
+  tempMin          Decimal?       @map("temp_min") @db.Decimal(5, 2)
+  rainfallMm       Decimal?       @map("rainfall_mm") @db.Decimal(8, 2)
+  sunshineHours    Decimal?       @map("sunshine_hours") @db.Decimal(6, 2)
+  pressureHpa      Decimal?       @map("pressure_hpa") @db.Decimal(7, 2)
+  humidity0700     Decimal?       @map("humidity_0700") @db.Decimal(5, 2)
+  humidity1300     Decimal?       @map("humidity_1300") @db.Decimal(5, 2)
+  humidity1800     Decimal?       @map("humidity_1800") @db.Decimal(5, 2)
+  humidityAvg      Decimal?       @map("humidity_avg") @db.Decimal(5, 2)
+  windAvgKmh       Decimal?       @map("wind_avg_kmh") @db.Decimal(6, 2)
+  windDirection    String?        @map("wind_direction") @db.VarChar(32)
+  windMaxKnot      Int?           @map("wind_max_knot")
+  windMaxDirection String?        @map("wind_max_direction") @db.VarChar(32)
+  qcFlag           Int            @default(0) @map("qc_flag")
+  qcParameter      String?        @map("qc_parameter") @db.VarChar(255)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @default(now()) @updatedAt @map("updated_at")
+  weatherEvents    WeatherEvent[]
+
+  @@unique([stationId, observedAt], name: "uq_station_observation_date")
+  @@index([stationId, observedAt], name: "idx_observations_station_date")
+  @@index([observedAt], name: "idx_observations_date")
+  @@index([qcFlag], name: "idx_observations_qc")
+  @@map("climate_observations")
+}
+
+model WeatherEvent {
+  id            BigInt             @id @default(autoincrement())
+  observationId BigInt             @map("observation_id")
+  observation   ClimateObservation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  eventCode     String             @map("event_code") @db.VarChar(32)
+  eventLabel    String             @map("event_label") @db.VarChar(100)
+
+  @@index([eventCode], name: "idx_weather_events_code")
+  @@map("weather_events")
+}
+
+model ImportBatch {
+  id          BigInt   @id @default(autoincrement())
+  fileName    String   @map("file_name") @db.VarChar(255)
+  fileHash    String?  @map("file_hash") @db.VarChar(128)
+  totalRows   Int      @default(0) @map("total_rows")
+  validRows   Int      @default(0) @map("valid_rows")
+  invalidRows Int      @default(0) @map("invalid_rows")
+  importedAt  DateTime @default(now()) @map("imported_at")
+  status      String   @db.VarChar(32)
+
+  @@map("import_batches")
+}
+
+model RawFklimObservation {
+  id          BigInt   @id @default(autoincrement())
+  fileName    String   @map("file_name") @db.VarChar(255)
+  rawRow      String   @map("raw_row")
+  importedAt  DateTime @default(now()) @map("imported_at")
+
+  @@map("raw_fklim_observations")
+}

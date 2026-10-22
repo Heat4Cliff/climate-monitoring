@@ -1,0 +1,57 @@
+# Data files (Sensitive BMKG / Climate Observations & Recaps)
+*.csv
+*.xlsx
+*.xls
+**/*.csv
+**/*.xlsx
+**/*.xls
+
+# Environment variables & secrets
+.env
+.env.*
+.env.local
+!.env.example
+**/.env
+**/.env.*
+**/.env.local
+!**/.env.example
+
+# Node dependencies & packages
+**/node_modules/
+**/.pnp
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/versions
+
+# Next.js & Build outputs
+**/.next/
+**/out/
+**/build/
+**/dist/
+
+# Database files & Docker volumes
+postgres_data/
+metabase_data/
+metabase-data/
+*.sqlite
+*.sqlite-journal
+*.db
+*.db-journal
+
+# Logs & Debugging
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# System & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.tsbuildinfo
+next-env.d.ts
